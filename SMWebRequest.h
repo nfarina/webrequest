@@ -47,7 +47,7 @@ typedef NSUInteger SMWebRequestEvents;
 @interface SMWebRequest : NSObject {
 @private
 	id<SMWebRequestDelegate> delegate; // not retained
-	id context; // retained for the lifetime of the web request
+	id context;
 
 	NSMutableArray *targetActions;
 	NSURLConnection *connection;

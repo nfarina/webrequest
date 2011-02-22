@@ -32,7 +32,7 @@
 @synthesize context, targetActions, delegate, data, request, response, connection;
 
 - (id)initWithURLRequest:(NSURLRequest *)theRequest delegate:(id<SMWebRequestDelegate>)theDelegate context:(id)theContext {
-	if([super init]) {
+	if ([super init]) {
 		self.request = theRequest;
 		self.delegate = theDelegate;
 		self.context = theContext;
@@ -71,7 +71,7 @@
 }
 
 - (void)start {
-	if (requestFlags.started) return; // you can only call this method once
+	if (requestFlags.started) return; // subsequent calls to this method won't do anything
 	
 	requestFlags.started = YES;
 	
@@ -82,6 +82,7 @@
 }
 
 - (void)cancel {
+	if (requestFlags.cancelled) return; // subsequent calls to this method won't do anything
 	
 	// the only thing that can actually be "cancelled" is the NSURLConnection. Background thread processing can't be
 	// cancelled since the background thread must run to completion or else you end up with god knows what on the heap.
@@ -91,13 +92,14 @@
 		self.connection = nil;
 	}
 	requestFlags.cancelled = YES;
+	self.context = nil; // you'll never hear from us again.
 }
 
 #pragma mark Target/Action management
 
 - (SMTargetAction *)targetActionForTarget:(id)target action:(SEL)action {
 	for(SMTargetAction *ta in targetActions)
-		if(ta->target == target && (ta->action == action || !action))
+		if (ta->target == target && (ta->action == action || !action))
 			return ta;
 	
 	return nil;
@@ -123,16 +125,16 @@
 		
 		SMTargetAction *ta = [self targetActionForTarget:target action:action];
 		
-		if(!ta) break;
+		if (!ta) break;
 		
 		SMWebRequestEvents toRemove = ta->events & events;
 		ta->events -= toRemove;
 		
-		if(!ta->events)
+		if (!ta->events)
 			[targetActions removeObject:ta];		
 	}
 	
-	if(![targetActions count])
+	if (![targetActions count])
 		[self cancel];
 }
 
@@ -144,7 +146,7 @@
 	NSMutableArray *resultTargetActions = [NSMutableArray array];
 	
 	for(SMTargetAction *ta in targetActions)
-		if((ta->events & events) != 0) [resultTargetActions addObject:ta];
+		if ((ta->events & events) != 0) [resultTargetActions addObject:ta];
 	
 	return resultTargetActions;
 }
@@ -154,6 +156,9 @@
 	
 	for (SMTargetAction *ta in [self targetActionsForEvents:events])
 		[ta->target performSelector:ta->action withObject:arg withObject:context];
+	
+	// events dispatched (if any) and delegate called (if any); so we're done.
+	self.context = nil;
 }
 
 - (void)dispatchComplete:(id)resultObject {
@@ -235,7 +240,7 @@
 		[self dispatchError:[NSError errorWithDomain:@"SMWebRequest" code:status userInfo:details]];
 	}
 	else {
-		if([delegate respondsToSelector:@selector(webRequest:resultObjectForData:context:)]) {
+		if ([delegate respondsToSelector:@selector(webRequest:resultObjectForData:context:)]) {
 			
 			// neither us nor our delegate can get dealloced whilst processing on the background
 			// thread or else the background thread could try to do stuff with pointers to garbage.
