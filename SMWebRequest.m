@@ -42,7 +42,7 @@
 }
 
 - (void)dealloc {
-	NSLog(@"Dealloc %@", self);
+	//NSLog(@"Dealloc %@", self);
 	[self cancel];
 	self.delegate = nil;
 	self.context = nil;
@@ -75,7 +75,7 @@
 	
 	requestFlags.started = YES;
 	
-	NSLog(@"Requesting %@", self);
+	//NSLog(@"Requesting %@", self);
 	
 	self.data = [NSMutableData data];
 	self.connection = [NSURLConnection connectionWithRequest:request delegate:self];
@@ -86,7 +86,7 @@
 	// the only thing that can actually be "cancelled" is the NSURLConnection. Background thread processing can't be
 	// cancelled since the background thread must run to completion or else you end up with god knows what on the heap.
 	if (connection) {
-		NSLog(@"Cancelling %@", self);
+		//NSLog(@"Cancelling %@", self);
 		[connection cancel];
 		self.connection = nil;
 	}
@@ -160,7 +160,7 @@
 	
 	if ([delegate respondsToSelector:@selector(webRequest:didCompleteWithResult:context:)])
 		[delegate webRequest:self didCompleteWithResult:resultObject context:context];		
-
+	
 	[self dispatchEvents:SMWebRequestEventComplete withArgument:resultObject];
 }
 
@@ -201,20 +201,20 @@
 
 - (void)connection:(NSURLConnection *)conn didReceiveResponse:(NSURLResponse *)aResponse {
 	self.response = aResponse;
-    [data setLength:0];
+	[data setLength:0];
 }
 
 - (void)connection:(NSURLConnection *)conn didReceiveData:(NSData *)moreData {
-    [data appendData:moreData];
+	[data appendData:moreData];
 }
 
 - (void)connection:(NSURLConnection *)conn didFailWithError:(NSError *)theError {
-    NSLog(@"SMWebRequest's NSURLConnection failed! Error - %@ %@", theError, conn);
+	NSLog(@"SMWebRequest's NSURLConnection failed! Error - %@ %@", theError, conn);
 	
 	self.connection = nil;
 	self.data = nil;
 	[self retain]; // we must retain ourself before we call handlers, in case they release us!
-
+	
 	[self dispatchError:theError];
 	
 	[self release];
@@ -222,12 +222,12 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)conn {
 	
-	NSLog(@"Finished loading %@", self);
-
+	//NSLog(@"Finished loading %@", self);
+	
 	[self retain]; // we must retain ourself before we call handlers, in case they release us!
-
+	
 	NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? [(NSHTTPURLResponse *)response statusCode] : 200;
-
+	
 	if (conn && response && (status < 200 || (status >= 300) && status != 304)) {
 		NSLog(@"Failed with HTTP status code %i while loading %@", status, self);
 		
@@ -249,7 +249,7 @@
 		else
 			[self dispatchComplete:data];
 	}
-
+	
 	self.connection = nil;
 	self.data = nil; // don't keep this!
 	[self release];

@@ -36,9 +36,9 @@
 // events on your object (which may be dealloc'd at this point).
 
 enum {
-    SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
-    SMWebRequestEventError     = 1 << 1, // selector will be passed a pointer to NSError instance
-    SMWebRequestEventAllEvents = 0xFFFFFFFF
+	SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
+	SMWebRequestEventError	   = 1 << 1, // selector will be passed a pointer to NSError instance
+	SMWebRequestEventAllEvents = 0xFFFFFFFF
 };
 typedef NSUInteger SMWebRequestEvents;
 
@@ -47,7 +47,7 @@ typedef NSUInteger SMWebRequestEvents;
 @interface SMWebRequest : NSObject {
 @private
 	id<SMWebRequestDelegate> delegate; // not retained
-	id context;	// retained for the lifetime of the web request
+	id context; // retained for the lifetime of the web request
 
 	NSMutableArray *targetActions;
 	NSURLConnection *connection;
