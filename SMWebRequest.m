@@ -1,5 +1,7 @@
 #import "SMWebRequest.h"
 
+NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError = @"SMWebRequestError";
+
 //
 // Utility class for tracking our target/action pairs.
 //
@@ -163,18 +165,29 @@
 
 - (void)dispatchComplete:(id)resultObject {
 	
+	// notify the delegate first
 	if ([delegate respondsToSelector:@selector(webRequest:didCompleteWithResult:context:)])
 		[delegate webRequest:self didCompleteWithResult:resultObject context:context];		
 	
+	// notify event listeners
 	[self dispatchEvents:SMWebRequestEventComplete withArgument:resultObject];
+	
+	// notify the world last
+	[[NSNotificationCenter defaultCenter] postNotificationName:kSMWebRequestComplete object:self];
 }
 
-- (void)dispatchError:(id)theError {
-	
+- (void)dispatchError:(NSError *)error {
+
+	// notify the delegate first
 	if ([delegate respondsToSelector:@selector(webRequest:didFailWithError:context:)])
-		[delegate webRequest:self didFailWithError:theError context:context];
+		[delegate webRequest:self didFailWithError:error context:context];
 	
-	[self dispatchEvents:SMWebRequestEventError withArgument:theError];
+	// notify event listeners
+	[self dispatchEvents:SMWebRequestEventError withArgument:error];
+	
+	// notify the world last
+	NSDictionary *info = [NSDictionary dictionaryWithObject:error forKey:NSUnderlyingErrorKey];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kSMWebRequestError object:self userInfo:info];
 }
 
 // in a background thread! don't touch our instance members!
@@ -213,14 +226,14 @@
 	[data appendData:moreData];
 }
 
-- (void)connection:(NSURLConnection *)conn didFailWithError:(NSError *)theError {
-	NSLog(@"SMWebRequest's NSURLConnection failed! Error - %@ %@", theError, conn);
+- (void)connection:(NSURLConnection *)conn didFailWithError:(NSError *)error {
+	NSLog(@"SMWebRequest's NSURLConnection failed! Error - %@ %@", error, conn);
 	
 	self.connection = nil;
 	self.data = nil;
 	[self retain]; // we must retain ourself before we call handlers, in case they release us!
 	
-	[self dispatchError:theError];
+	[self dispatchError:error];
 	
 	[self release];
 }

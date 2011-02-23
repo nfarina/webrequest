@@ -97,3 +97,6 @@ typedef NSUInteger SMWebRequestEvents;
 - (void)webRequest:(SMWebRequest *)webRequest didFailWithError:(NSError *)error context:(id)context;
 
 @end
+
+// Global NSNotifications you can hook into to be notified of request completions and errors.
+extern NSString *kSMWebRequestComplete, *kSMWebRequestError;
