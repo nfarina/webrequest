@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import "HomeController.h"
 #import "SMWebRequest.h"
 
 @implementation AppDelegate
@@ -8,6 +9,14 @@
 	SMWebRequest *request = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://www.google.com"]];
 	[request addTarget:self action:@selector(googleFinished:) forRequestEvents:SMWebRequestEventComplete];
 	[request start];
+	
+	HomeController *home = [[HomeController alloc] initHomeController];
+	UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:home];
+	nav.navigationBar.barStyle = UIBarStyleBlack;
+	
+	window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	[window addSubview:nav.view];
+    [window makeKeyAndVisible];
 }
 
 - (void)googleFinished:(NSData *)responseData {
