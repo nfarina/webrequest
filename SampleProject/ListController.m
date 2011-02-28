@@ -43,7 +43,7 @@
 
 - (void)loadView {
 	[super loadView];
-	
+	self.tableView.rowHeight = 50;
 }
 
 - (void)refresh {
@@ -90,6 +90,10 @@
 	
 	if (!cell) {
 		cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
+		cell.textLabel.font = [UIFont systemFontOfSize:14];
+		cell.textLabel.lineBreakMode = UILineBreakModeWordWrap;
+		cell.textLabel.numberOfLines = 2;
+		cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 	}
 	
 	cell.textLabel.text = [[items objectAtIndex:indexPath.row] childNamed:@"title"].value;
