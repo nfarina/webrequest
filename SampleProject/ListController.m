@@ -25,6 +25,7 @@
 - (id)initListController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		self.title = @"Hacker News";
+		self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStyleBordered target:nil action:nil] autorelease];
 		
 		UIBarButtonItem *refresh = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh 
 																				  target:self 
