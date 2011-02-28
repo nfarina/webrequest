@@ -14,17 +14,12 @@
 - (id)initWithItem:(SMXMLElement *)theItem {
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		self.item = theItem;
-		
-		
-		self.toolbarItems = [NSArray arrayWithObjects:
-							 [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(displayComments)] autorelease]
-							  ,nil];
+		self.hidesBottomBarWhenPushed = YES;
 	}
 	return self;
 }
 
 - (void)loadView {
-	
 	UILabel *titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)] autorelease];
 	titleLabel.font = [UIFont boldSystemFontOfSize:14];
 	titleLabel.numberOfLines = 2;
@@ -44,17 +39,6 @@
 
 - (void)viewWillAppear:(BOOL)animated {
 	[webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:[item childNamed:@"link"].value]]];
-}
-
-- (void)displayComments {
-	
-}
-
-- (void)webViewDidStartLoad:(UIWebView *)webView {
-	NSLog(@"start load");
-}
-- (void)webViewDidFinishLoad:(UIWebView *)webView {
-	NSLog(@"finish load");
 }
 
 @end
