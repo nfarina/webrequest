@@ -1,6 +1,0 @@
-
-@interface HomeView : UIView {
-
-}
-
-@end

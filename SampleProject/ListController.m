@@ -8,7 +8,6 @@
 
 @end
 
-
 @implementation ListController
 
 @synthesize request, items;
@@ -42,18 +41,21 @@
 	}
 }
 
+// This method is called on a background thread. Don't touch your instance members!
+- (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
+	// We do this gnarly parsing on a background thread to keep the UI responsive.
+	SMXMLDocument *document = [SMXMLDocument documentWithData:data];
+	
+	// Select and return the bits in which we're interested.
+	return [[document.root childNamed:@"channel"] childrenNamed:@"item"];
+}
+
 - (void)requestComplete:(NSArray *)theItems {
 	self.items = theItems;
 	[self.tableView reloadData];
 }
 
-// This method is called on a background thread. Don't touch your instance members!
-- (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
-	
-	SMXMLDocument *document = [SMXMLDocument documentWithData:data];
-	
-	return [[document.root childNamed:@"channel"] childrenNamed:@"item"];
-}
+#pragma mark UITableViewDelegate, UITableViewDataSource
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	
@@ -75,6 +77,5 @@
 	cell.textLabel.text = [[items objectAtIndex:indexPath.row] childNamed:@"title"].value;
 	return cell;
 }
-		
 
 @end
