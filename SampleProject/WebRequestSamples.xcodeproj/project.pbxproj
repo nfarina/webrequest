@@ -72,10 +72,10 @@
 		28EEBF621118D79A00187D67 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				01C7FB131312E94600DBD0B1 /* AppDelegate.h */,
-				01C7FB141312E94600DBD0B1 /* AppDelegate.m */,
 				8D1107310486CEB800E47090 /* WebRequestSamples-Info.plist */,
 				01C7FB111312E93E00DBD0B1 /* main.m */,
+				01C7FB131312E94600DBD0B1 /* AppDelegate.h */,
+				01C7FB141312E94600DBD0B1 /* AppDelegate.m */,
 				4101392E131B6501005D9663 /* ListController.h */,
 				4101392F131B6501005D9663 /* ListController.m */,
 				41013A50131B9010005D9663 /* ItemController.h */,
