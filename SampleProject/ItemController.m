@@ -14,7 +14,8 @@
 - (id)initWithItem:(SMXMLElement *)theItem {
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		self.item = theItem;
-		self.title = [item childNamed:@"title"].value;
+		
+		
 		self.toolbarItems = [NSArray arrayWithObjects:
 							 [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(displayComments)] autorelease]
 							  ,nil];
@@ -23,6 +24,19 @@
 }
 
 - (void)loadView {
+	
+	UILabel *titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)] autorelease];
+	titleLabel.font = [UIFont boldSystemFontOfSize:14];
+	titleLabel.numberOfLines = 2;
+	titleLabel.adjustsFontSizeToFitWidth = YES;
+	titleLabel.lineBreakMode = UILineBreakModeWordWrap;
+	titleLabel.text = [item childNamed:@"title"].value;
+	titleLabel.backgroundColor = [UIColor clearColor];
+	titleLabel.shadowColor = [UIColor blackColor];
+	titleLabel.textColor = [UIColor whiteColor];
+	titleLabel.textAlignment = UITextAlignmentCenter;
+	self.navigationItem.titleView = titleLabel;
+	
 	self.view = webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
 	webView.scalesPageToFit = YES;
 	webView.delegate = self;
