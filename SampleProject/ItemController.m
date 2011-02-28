@@ -19,6 +19,10 @@
     return self;
 }
 
+- (void)dealloc {
+    self.item = nil;
+}
+
 - (void)loadView {
     UILabel *titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)] autorelease];
     titleLabel.font = [UIFont boldSystemFontOfSize:14];
