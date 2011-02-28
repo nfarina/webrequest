@@ -1,0 +1,3 @@
+[submodule "xmldocument"]
+	path = xmldocument
+	url = https://github.com/nfarina/xmldocument.git

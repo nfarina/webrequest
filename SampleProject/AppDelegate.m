@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import "HomeController.h"
+#import "ListController.h"
 #import "SMWebRequest.h"
 
 @implementation AppDelegate
@@ -10,7 +10,7 @@
 	[request addTarget:self action:@selector(googleFinished:) forRequestEvents:SMWebRequestEventComplete];
 	[request start];
 	
-	HomeController *home = [[HomeController alloc] initHomeController];
+	ListController *home = [[ListController alloc] initListController];
 	UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:home];
 	nav.navigationBar.barStyle = UIBarStyleBlack;
 	

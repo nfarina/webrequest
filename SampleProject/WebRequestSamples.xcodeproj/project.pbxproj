@@ -16,6 +16,7 @@
 		41013858131B4157005D9663 /* HomeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 41013857131B4157005D9663 /* HomeController.m */; };
 		4101385B131B4171005D9663 /* HomeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4101385A131B4171005D9663 /* HomeView.m */; };
 		41013930131B6501005D9663 /* ListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4101392F131B6501005D9663 /* ListController.m */; };
+		41013953131B6C6B005D9663 /* SMXMLDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 41013952131B6C6B005D9663 /* SMXMLDocument.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,8 @@
 		4101385A131B4171005D9663 /* HomeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HomeView.m; sourceTree = "<group>"; };
 		4101392E131B6501005D9663 /* ListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ListController.h; sourceTree = "<group>"; };
 		4101392F131B6501005D9663 /* ListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ListController.m; sourceTree = "<group>"; };
+		41013951131B6C6B005D9663 /* SMXMLDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SMXMLDocument.h; path = ../xmldocument/SMXMLDocument.h; sourceTree = SOURCE_ROOT; };
+		41013952131B6C6B005D9663 /* SMXMLDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SMXMLDocument.m; path = ../xmldocument/SMXMLDocument.m; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* WebRequestSamples-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "WebRequestSamples-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -89,6 +92,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				41013950131B6C47005D9663 /* XML Document */,
 				01C7FB1F1312E98200DBD0B1 /* Web Request */,
 				28EEBF621118D79A00187D67 /* Shared */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
@@ -114,6 +118,15 @@
 				288765FC0DF74451002DB57D /* CoreGraphics.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		41013950131B6C47005D9663 /* XML Document */ = {
+			isa = PBXGroup;
+			children = (
+				41013951131B6C6B005D9663 /* SMXMLDocument.h */,
+				41013952131B6C6B005D9663 /* SMXMLDocument.m */,
+			);
+			name = "XML Document";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -181,6 +194,7 @@
 				41013858131B4157005D9663 /* HomeController.m in Sources */,
 				4101385B131B4171005D9663 /* HomeView.m in Sources */,
 				41013930131B6501005D9663 /* ListController.m in Sources */,
+				41013953131B6C6B005D9663 /* SMXMLDocument.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
