@@ -1,4 +1,5 @@
 #import "ListController.h"
+#import "ItemController.h"
 #import "SMXMLDocument.h"
 
 @interface ListController ()
@@ -24,6 +25,11 @@
 - (id)initListController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		self.title = @"Hacker News";
+		
+		UIBarButtonItem *refresh = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh 
+																				  target:self 
+																				  action:@selector(refresh)] autorelease];
+		self.toolbarItems = [NSArray arrayWithObject:refresh];
 	}
 	return self;
 }
@@ -34,11 +40,21 @@
 	[super dealloc];
 }
 
+- (void)loadView {
+	[super loadView];
+	
+}
+
+- (void)refresh {
+	self.request = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://news.ycombinator.com/rss"] delegate:self context:nil];
+	[request start];
+}
+
 - (void)viewWillAppear:(BOOL)animated {
 	if (!items) {
-		self.request = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://news.ycombinator.com/rss"] delegate:self context:nil];
-		[request start];
+		[self refresh];
 	}
+	[self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:animated];
 }
 
 // This method is called on a background thread. Don't touch your instance members!
@@ -58,7 +74,8 @@
 #pragma mark UITableViewDelegate, UITableViewDataSource
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	
+	ItemController *itemController = [[[ItemController alloc] initWithItem:[items objectAtIndex:[indexPath row]]] autorelease];
+	[self.navigationController pushViewController:itemController animated:YES];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
