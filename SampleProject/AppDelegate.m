@@ -2,10 +2,6 @@
 #import "ListController.h"
 #import "SMWebRequest.h"
 
-@interface NSObject ()
-- (id)JSONValue;
-@end
-
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
