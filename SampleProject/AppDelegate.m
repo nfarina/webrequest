@@ -2,6 +2,10 @@
 #import "ListController.h"
 #import "SMWebRequest.h"
 
+@interface NSObject ()
+- (id)JSONValue;
+@end
+
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -14,7 +18,7 @@
     [request addTarget:self action:@selector(googleFinished:) forRequestEvents:SMWebRequestEventComplete];
     [request start];
     
-	// Example 2: Make a simple but extremely nice+performant RSS reader for Hacker News!
+	// Example 2: Make a simple but extremely nice+performant RSS reader for Hacker News! Courtesy @bvanderveen
     ListController *home = [[ListController alloc] initListController];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:home];
     nav.toolbarHidden = NO;
@@ -35,7 +39,7 @@
 - (void)webRequestError:(NSNotification *)notification {
     if (showedOfflineAlert) return;
     showedOfflineAlert = YES;
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"" message:@"You appear to be offline." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Request Error" message:@"You appear to be offline. Please try again later." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
     [alertView show];
 }
 

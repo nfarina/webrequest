@@ -12,7 +12,7 @@
 @synthesize item;
 
 - (id)initWithItem:(SMXMLElement *)theItem {
-    if (self = [super initWithNibName:nil bundle:nil]) {
+    if ((self = [super init])) {
         self.item = theItem;
         self.hidesBottomBarWhenPushed = YES;
     }

@@ -16,14 +16,11 @@
 // it's a good idea for controllers to retain the requests they create for easy cancellation.
 - (void)setRequest:(SMWebRequest *)value {
     [request removeTarget:self]; // will cancel the request if it is currently loading.
-    [request release];
-    
-    request = [value retain];
-    [request addTarget:self action:@selector(requestComplete:) forRequestEvents:SMWebRequestEventComplete];
+    [request release], request = [value retain];
 }
 
 - (id)initListController {
-    if (self = [super initWithNibName:nil bundle:nil]) {
+    if ((self = [super init])) {
         self.title = @"Hacker News";
         self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStyleBordered target:nil action:nil] autorelease];
         
@@ -48,6 +45,7 @@
 
 - (void)refresh {
     self.request = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://news.ycombinator.com/rss"] delegate:self context:nil];
+    [request addTarget:self action:@selector(requestComplete:) forRequestEvents:SMWebRequestEventComplete];
     [request start];
 }
 
