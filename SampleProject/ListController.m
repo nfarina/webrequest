@@ -1,6 +1,5 @@
 #import "ListController.h"
 #import "ItemController.h"
-#import "SMXMLDocument.h"
 
 @interface ListController ()
 

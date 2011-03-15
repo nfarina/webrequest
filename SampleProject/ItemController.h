@@ -1,4 +1,3 @@
-#import "SMXMLDocument.h"
 #import "Item.h"
 
 @interface ItemController : UIViewController <UIWebViewDelegate> {
