@@ -2,16 +2,15 @@
 
 @interface ItemController ()
 
-@property (nonatomic, retain) SMXMLElement *item;
+@property (nonatomic, retain) Item *item;
 
 @end
-
 
 @implementation ItemController
 
 @synthesize item;
 
-- (id)initWithItem:(SMXMLElement *)theItem {
+- (id)initWithItem:(Item *)theItem {
     if ((self = [super init])) {
         self.item = theItem;
         self.hidesBottomBarWhenPushed = YES;
@@ -30,7 +29,7 @@
     titleLabel.numberOfLines = 2;
     titleLabel.adjustsFontSizeToFitWidth = YES;
     titleLabel.lineBreakMode = UILineBreakModeWordWrap;
-    titleLabel.text = [item childNamed:@"title"].value;
+    titleLabel.text = item.title;
     titleLabel.backgroundColor = [UIColor clearColor];
     titleLabel.shadowColor = [UIColor blackColor];
     titleLabel.textColor = [UIColor whiteColor];
@@ -43,7 +42,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    [webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:[item childNamed:@"link"].value]]];
+    [webView loadRequest:[NSURLRequest requestWithURL:item.link]];
 }
 
 @end

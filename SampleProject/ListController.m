@@ -44,7 +44,7 @@
 }
 
 - (void)refresh {
-    self.request = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://news.ycombinator.com/rss"] delegate:self context:nil];
+    self.request = [Item createItemsRequest];
     [request addTarget:self action:@selector(requestComplete:) forRequestEvents:SMWebRequestEventComplete];
     [request start];
 }
@@ -56,14 +56,6 @@
     [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:animated];
 }
 
-// This method is called on a background thread. Don't touch your instance members!
-- (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
-    // We do this gnarly parsing on a background thread to keep the UI responsive.
-    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
-    
-    // Select and return the bits in which we're interested.
-    return [[document.root childNamed:@"channel"] childrenNamed:@"item"];
-}
 
 - (void)requestComplete:(NSArray *)theItems {
     self.items = theItems;
@@ -94,7 +86,8 @@
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
-    cell.textLabel.text = [[items objectAtIndex:indexPath.row] childNamed:@"title"].value;
+    Item *item = [items objectAtIndex:indexPath.row];
+    cell.textLabel.text = item.title;
     return cell;
 }
 

@@ -1,10 +1,11 @@
 #import "SMXMLDocument.h"
+#import "Item.h"
 
 @interface ItemController : UIViewController <UIWebViewDelegate> {
     UIWebView *webView;
-    SMXMLElement *item;
+    Item *item;
 }
 
-- (id)initWithItem:(SMXMLElement *)item;
+- (id)initWithItem:(Item *)item;
 
 @end

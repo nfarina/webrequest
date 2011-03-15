@@ -1,6 +1,6 @@
 #import "SMWebRequest.h"
 
-@interface ListController : UITableViewController <SMWebRequestDelegate> {
+@interface ListController : UITableViewController {
     NSArray *items;
     SMWebRequest *request;
 }
