@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import "ListController.h"
+#import "RSSFeedController.h"
 #import "SMWebRequest.h"
 
 @implementation AppDelegate
@@ -7,7 +7,7 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 
 	// Demonstrate how we can listen globally to web request error events, to implement a systemwide failure message. Apple likes those!
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(webRequestError:) name:kSMWebRequestError object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(webRequestError:) name:kSMWebRequestError object:nil];
 	
 	// Example 1: Make an autoreleased "set it and forget it" web request to Google.
     SMWebRequest *request = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://www.google.com"]];
@@ -15,11 +15,18 @@
     [request start];
     
 	// Example 2: Make a simple but extremely nice+performant RSS reader for Hacker News! Courtesy @bvanderveen
-    ListController *home = [[ListController alloc] initListController];
+    
+    NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // you can really use any RSS url here
+    RSSFeedController *home = [[RSSFeedController alloc] initWithRSSFeedURL:url];
+
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:home];
     nav.toolbarHidden = NO;
     nav.toolbar.barStyle = UIBarStyleBlack;
-    nav.navigationBar.barStyle = UIBarStyleBlack;
+    
+    // Mimic the HN site.
+    home.title = @"Hacker News";
+    home.tableView.backgroundColor = [UIColor colorWithRed:246.0/255.0 green:246.0/255.0 blue:239.0/255.0 alpha:1];
+    nav.navigationBar.tintColor = [UIColor colorWithRed:235.0/255.0 green:120.0/255.0 blue:31.0/255.0 alpha:1];
     
     window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [window addSubview:nav.view];
@@ -33,8 +40,8 @@
 
 // Global error handler displays a simple failure message.
 - (void)webRequestError:(NSNotification *)notification {
-    if (showedOfflineAlert) return;
-    showedOfflineAlert = YES;
+    if (displayedOfflineAlert) return;
+    displayedOfflineAlert = YES;
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Request Error" message:@"You appear to be offline. Please try again later." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
     [alertView show];
 }

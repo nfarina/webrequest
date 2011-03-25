@@ -1,26 +1,25 @@
-#import "ListController.h"
-#import "ItemController.h"
+#import "RSSFeedController.h"
+#import "RSSItemController.h"
 
-@interface ListController ()
-
+@interface RSSFeedController ()
+@property (nonatomic, retain) NSURL *feedURL;
 @property (nonatomic, retain) SMWebRequest *request;
 @property (nonatomic, retain) NSArray *items;
-
 @end
 
-@implementation ListController
-
-@synthesize request, items;
+@implementation RSSFeedController
+@synthesize feedURL, request, items;
 
 // it's a good idea for controllers to retain the requests they create for easy cancellation.
+// also, implementing our own setter is the recommended practice for ensuring that our target/action listeners are safely removed.
 - (void)setRequest:(SMWebRequest *)value {
     [request removeTarget:self]; // will cancel the request if it is currently loading.
     [request release], request = [value retain];
 }
 
-- (id)initListController {
+- (id)initWithRSSFeedURL:(NSURL *)URL {
     if ((self = [super init])) {
-        self.title = @"Hacker News";
+        self.feedURL = URL;
         self.navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Back" style:UIBarButtonItemStyleBordered target:nil action:nil] autorelease];
         
         UIBarButtonItem *refresh = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh 
@@ -43,28 +42,32 @@
 }
 
 - (void)refresh {
-    self.request = [Item createItemsRequest];
+    self.request = [RSSItem requestForItemsWithURL:feedURL];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
     [request addTarget:self action:@selector(requestComplete:) forRequestEvents:SMWebRequestEventComplete];
+    [request addTarget:self action:@selector(requestError:) forRequestEvents:SMWebRequestEventError];
     [request start];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    if (!items) {
-        [self refresh];
-    }
-    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:animated];
+    if (!items) [self refresh];
+    [super viewWillAppear:animated];
 }
-
 
 - (void)requestComplete:(NSArray *)theItems {
     self.items = theItems;
     [self.tableView reloadData];
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+}
+
+- (void)requestError:(NSError *)theError {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
 #pragma mark UITableViewDelegate, UITableViewDataSource
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    ItemController *itemController = [[[ItemController alloc] initWithItem:[items objectAtIndex:[indexPath row]]] autorelease];
+    RSSItemController *itemController = [[[RSSItemController alloc] initWithRSSItem:[items objectAtIndex:[indexPath row]]] autorelease];
     [self.navigationController pushViewController:itemController animated:YES];
 }
 
@@ -79,13 +82,13 @@
     
     if (!cell) {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier] autorelease];
-        cell.textLabel.font = [UIFont systemFontOfSize:14];
+        cell.textLabel.font = [UIFont boldSystemFontOfSize:15];
         cell.textLabel.lineBreakMode = UILineBreakModeWordWrap;
         cell.textLabel.numberOfLines = 2;
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
-    Item *item = [items objectAtIndex:indexPath.row];
+    RSSItem *item = [items objectAtIndex:indexPath.row];
     cell.textLabel.text = item.title;
     return cell;
 }

@@ -1,26 +1,13 @@
-#import "Item.h"
+#import "RSSItem.h"
 
-
-@implementation Item
-
+@implementation RSSItem
 @synthesize title, link;
 
-- (void)setTitle:(NSString *)value {
-    [title release];
-    title = [value copy];
-}
-
-- (void)setLink:(NSURL *)value {
-    [link release];
-    link = [value retain];
-}
-
-- (id)initWithElement:(SMXMLElement *)element {
-    if (self = [super init]) {
-        self.title = [element childNamed:@"title"].value;
-        self.link = [NSURL URLWithString:[element childNamed:@"link"].value];
-    }
-    return self;
++ (RSSItem *)itemWithElement:(SMXMLElement *)element {
+    RSSItem *item = [[RSSItem new] autorelease];
+    item.title = [element childNamed:@"title"].value;
+    item.link = [NSURL URLWithString:[element childNamed:@"link"].value];
+    return item;
 }
 
 - (void)dealloc {
@@ -29,15 +16,17 @@
     [super dealloc];
 }
 
-+ (SMWebRequest *)createItemsRequest {
-    NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"];
-    return [SMWebRequest requestWithURL:url
++ (SMWebRequest *)requestForItemsWithURL:(NSURL *)URL {
+    
+    // Set ourself as the background processing delegate. The caller can still add herself as a listener for the resulting data.
+    return [SMWebRequest requestWithURL:URL
                                delegate:(id<SMWebRequestDelegate>)self 
                                 context:nil];
 }
 
 // This method is called on a background thread. Don't touch your instance members!
 + (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
+
     // We do this gnarly parsing on a background thread to keep the UI responsive.
     SMXMLDocument *document = [SMXMLDocument documentWithData:data];
     
@@ -47,9 +36,8 @@
     NSMutableArray *items = [NSMutableArray array];
     
     // Convert them into model objects
-    for (SMXMLElement *itemXml in itemsXml) {
-        [items addObject:[[[Item alloc] initWithElement:itemXml] autorelease]];
-    }
+    for (SMXMLElement *itemXml in itemsXml)
+        [items addObject:[RSSItem itemWithElement:itemXml]];
     
     return items;
 }
