@@ -1,11 +1,76 @@
 #import "AppDelegate.h"
 #import "RSSFeedController.h"
 #import "SMWebRequest.h"
+#import "SMXMLDocument.h"
 
 @implementation AppDelegate
 
+//- (void)downloadRSSFeed {
+//    NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // Hacker News
+//    SMWebRequest *request = [SMWebRequest requestWithURL:url];
+//    [request addTarget:self action:@selector(downloadComplete:) forRequestEvents:SMWebRequestEventComplete];
+//    [request start];
+//}
+//
+//- (void)downloadComplete:(NSData *)data {
+//    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
+//    NSArray *items = [[document.root childNamed:@"channel"] childrenNamed:@"item"];
+//    
+//    // pull out the first title
+//    SMXMLElement *element = [items objectAtIndex:0];
+//    NSLog(@"Article: %@", [element valueWithPath:@"title"]); // prints "Article: Is RSS Dead? Discuss."
+//}
+
+
+//- (void)downloadRSSFeed {
+//    NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // Hacker News
+//    SMWebRequest *request = [SMWebRequest requestWithURL:url];
+//    [request addTarget:self action:@selector(downloadComplete:) forRequestEvents:SMWebRequestEventComplete];
+//    [request start];
+//}
+//
+//- (void)downloadComplete:(NSData *)data {
+//    // detach a background thread to process the data
+//    [self performSelectorInBackground:@selector(parseRSSFeed:) withObject:data];
+//}
+//
+//// called in a background thread! Don't touch our instance members!
+//- (void)parseRSSFeed:(NSData *)data {
+//    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
+//    NSArray *items = [[document.root childNamed:@"channel"] childrenNamed:@"item"];
+//    
+//    // back to the main thread!
+//    [self performSelectorOnMainThread:@selector(parseComplete:) withObject:items waitUntilDone:NO];
+//}
+//
+//- (void)parseComplete:(NSArray *)items {
+//    SMXMLElement *element = [items objectAtIndex:0];
+//    NSLog(@"Article: %@", [element valueWithPath:@"title"]); // prints "Article: Twitter totally killed RSS."
+//}
+
+- (void)downloadRSSFeed {
+    NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // Hacker News
+    SMWebRequest *request = [SMWebRequest requestWithURL:url delegate:(id)[self class] context:nil];
+    [request addTarget:self action:@selector(downloadComplete:) forRequestEvents:SMWebRequestEventComplete];
+    [request start];
+}
+
++ (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
+    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
+    return [[document.root childNamed:@"channel"] childrenNamed:@"item"];
+}
+
+- (void)downloadComplete:(NSArray *)items {
+    SMXMLElement *element = [items objectAtIndex:0];
+    NSLog(@"Article: %@", [element valueWithPath:@"title"]); // prints "Article: Twitter hates us; back to RSS!"
+}
+
+
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 
+    [self downloadRSSFeed];
+    return;
+    
 	// Demonstrate how we can listen globally to web request error events, to implement a systemwide failure message. Apple likes those!
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(webRequestError:) name:kSMWebRequestError object:nil];
 	
