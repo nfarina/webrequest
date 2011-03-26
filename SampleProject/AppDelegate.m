@@ -2,6 +2,7 @@
 #import "RSSFeedController.h"
 #import "SMWebRequest.h"
 #import "SMXMLDocument.h"
+#import "RSSItem.h"
 
 @implementation AppDelegate
 
@@ -36,11 +37,16 @@
 //
 //// called in a background thread! Don't touch our instance members!
 //- (void)parseRSSFeed:(NSData *)data {
+//    
+//    NSAutoreleasePool *pool = [NSAutoreleasePool new]; // we'll need this to do anything in Cocoa
+//    
 //    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
 //    NSArray *items = [[document.root childNamed:@"channel"] childrenNamed:@"item"];
 //    
 //    // back to the main thread!
 //    [self performSelectorOnMainThread:@selector(parseComplete:) withObject:items waitUntilDone:NO];
+//    
+//    [pool release];
 //}
 //
 //- (void)parseComplete:(NSArray *)items {
@@ -48,21 +54,33 @@
 //    NSLog(@"Article: %@", [element valueWithPath:@"title"]); // prints "Article: Twitter totally killed RSS."
 //}
 
+//- (void)downloadRSSFeed {
+//    NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // Hacker News
+//    SMWebRequest *request = [SMWebRequest requestWithURL:url delegate:(id)[self class] context:nil];
+//    [request addTarget:self action:@selector(downloadComplete:) forRequestEvents:SMWebRequestEventComplete];
+//    [request start];
+//}
+//
+//+ (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
+//    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
+//    return [[document.root childNamed:@"channel"] childrenNamed:@"item"];
+//}
+//
+//- (void)downloadComplete:(NSArray *)items {
+//    SMXMLElement *element = [items objectAtIndex:0];
+//    NSLog(@"Article: %@", [element valueWithPath:@"title"]); // prints "Article: Twitter hates us; back to RSS!"
+//}
+
 - (void)downloadRSSFeed {
     NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // Hacker News
-    SMWebRequest *request = [SMWebRequest requestWithURL:url delegate:(id)[self class] context:nil];
+    SMWebRequest *request = [RSSItem requestForItemsWithURL:url];
     [request addTarget:self action:@selector(downloadComplete:) forRequestEvents:SMWebRequestEventComplete];
     [request start];
 }
 
-+ (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
-    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
-    return [[document.root childNamed:@"channel"] childrenNamed:@"item"];
-}
-
 - (void)downloadComplete:(NSArray *)items {
-    SMXMLElement *element = [items objectAtIndex:0];
-    NSLog(@"Article: %@", [element valueWithPath:@"title"]); // prints "Article: Twitter hates us; back to RSS!"
+    RSSItem *item = [items objectAtIndex:0];
+    NSLog(@"Article: %@", item.title); // prints "Article: News doesn't matter, let's get back to work."
 }
 
 
