@@ -1,6 +1,3 @@
 
-@interface AppDelegate : NSObject <UIApplicationDelegate> {
-    UIWindow *window;
-    bool displayedOfflineAlert;
-}
+@interface AppDelegate : NSObject <UIApplicationDelegate>
 @end

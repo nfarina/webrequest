@@ -28,7 +28,7 @@
     home.tableView.backgroundColor = [UIColor colorWithRed:246.0/255.0 green:246.0/255.0 blue:239.0/255.0 alpha:1];
     nav.navigationBar.tintColor = [UIColor colorWithRed:235.0/255.0 green:120.0/255.0 blue:31.0/255.0 alpha:1];
     
-    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [window addSubview:nav.view];
     [window makeKeyAndVisible];
 }
@@ -40,10 +40,15 @@
 
 // Global error handler displays a simple failure message.
 - (void)webRequestError:(NSNotification *)notification {
-    if (displayedOfflineAlert) return;
-    displayedOfflineAlert = YES;
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Request Error" message:@"You appear to be offline. Please try again later." delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
-    [alertView show];
+    static bool displayedOfflineAlert = NO;
+    static NSString *title = @"Request Error";
+    static NSString *message = @"You appear to be offline. Please try again later.";
+    
+    if (!displayedOfflineAlert) {
+        UIAlertView *alertView = [[[UIAlertView alloc] initWithTitle:title message:message delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] autorelease];
+        [alertView show];
+        displayedOfflineAlert = YES;
+    }
 }
 
 @end
