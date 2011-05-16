@@ -1,6 +1,6 @@
 #import "RSSItem.h"
 
-@interface RSSItemController : UIViewController <UIActionSheetDelegate>
+@interface RSSItemController : UIViewController <UIWebViewDelegate, UIActionSheetDelegate>
 
 - (id)initWithRSSItem:(RSSItem *)item;
 

@@ -50,6 +50,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
     if (!items) [self refresh];
     [super viewWillAppear:animated];
 }
@@ -57,11 +58,14 @@
 - (void)requestComplete:(NSArray *)theItems {
     self.items = theItems;
     [self.tableView reloadData];
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    
+    if ([self isViewLoaded])
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
 - (void)requestError:(NSError *)theError {
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    if ([self isViewLoaded])
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
 #pragma mark UITableViewDelegate, UITableViewDataSource

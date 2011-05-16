@@ -25,13 +25,10 @@
         titleLabel.textAlignment = UITextAlignmentCenter;
         self.navigationItem.titleView = titleLabel;
         
-        // toolbar
-        UIBarButtonItem *space = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease];
-        
         UIBarButtonItem *action = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self 
                                                                                  action:@selector(actionItemTapped)] autorelease];
         
-        self.toolbarItems = [NSArray arrayWithObjects:space, action, nil];
+        self.toolbarItems = [NSArray arrayWithObject:action];
     }
     return self;
 }
@@ -44,6 +41,7 @@
 
 - (void)loadView {
     self.webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
+    webView.delegate = self;
     webView.scalesPageToFit = YES;
     
     self.view = webView;
@@ -57,6 +55,15 @@
 - (void)viewWillAppear:(BOOL)animated {
     [webView loadRequest:[NSURLRequest requestWithURL:item.link]];
     [self.navigationController setNavigationBarHidden:NO animated:animated];
+    [super viewWillAppear:animated];
+}
+
+- (void)webViewDidStartLoad:(UIWebView *)webView {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+}
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView {
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
 #pragma mark Action Sheet
