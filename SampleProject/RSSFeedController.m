@@ -1,5 +1,6 @@
 #import "RSSFeedController.h"
-#import "RSSItemController.h"
+#import "RSSItem.h"
+#import "BrowserController.h"
 
 @interface RSSFeedController ()
 @property (nonatomic, retain) NSURL *feedURL;
@@ -70,11 +71,6 @@
 
 #pragma mark UITableViewDelegate, UITableViewDataSource
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    RSSItemController *itemController = [[[RSSItemController alloc] initWithRSSItem:[items objectAtIndex:[indexPath row]]] autorelease];
-    [self.navigationController pushViewController:itemController animated:YES];
-}
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return items.count;
 }
@@ -89,12 +85,24 @@
         cell.textLabel.font = [UIFont boldSystemFontOfSize:15];
         cell.textLabel.lineBreakMode = UILineBreakModeWordWrap;
         cell.textLabel.numberOfLines = 2;
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
     RSSItem *item = [items objectAtIndex:indexPath.row];
     cell.textLabel.text = item.title;
+    cell.accessoryType = item.comments ? UITableViewCellAccessoryDetailDisclosureButton : UITableViewCellAccessoryDisclosureIndicator;
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    RSSItem *item = [items objectAtIndex:indexPath.row];
+    BrowserController *itemController = [[[BrowserController alloc] initWithURL:item.link title:item.title] autorelease];
+    [self.navigationController pushViewController:itemController animated:YES];
+}
+
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    RSSItem *item = [items objectAtIndex:indexPath.row];
+    BrowserController *itemController = [[[BrowserController alloc] initWithURL:item.comments title:item.title] autorelease];
+    [self.navigationController pushViewController:itemController animated:YES];
 }
 
 @end

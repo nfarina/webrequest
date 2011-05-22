@@ -1,12 +1,18 @@
 #import "RSSItem.h"
 
 @implementation RSSItem
-@synthesize title, link;
+@synthesize title, link, comments;
 
 + (RSSItem *)itemWithElement:(SMXMLElement *)element {
     RSSItem *item = [[RSSItem new] autorelease];
     item.title = [element childNamed:@"title"].value;
-    item.link = [NSURL URLWithString:[element childNamed:@"link"].value];
+
+    if ([element childNamed:@"link"])
+        item.link = [NSURL URLWithString:[element childNamed:@"link"].value];
+
+    if ([element childNamed:@"comments"])
+        item.comments = [NSURL URLWithString:[element childNamed:@"comments"].value];
+
     return item;
 }
 

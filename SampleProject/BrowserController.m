@@ -1,16 +1,16 @@
-#import "RSSItemController.h"
+#import "BrowserController.h"
 
-@interface RSSItemController ()
+@interface BrowserController ()
 @property (nonatomic, retain) UIWebView *webView;
-@property (nonatomic, retain) RSSItem *item;
+@property (nonatomic, retain) NSURL *url;
 @end
 
-@implementation RSSItemController
-@synthesize webView, item;
+@implementation BrowserController
+@synthesize webView, url;
 
-- (id)initWithRSSItem:(RSSItem *)theItem {
+- (id)initWithURL:(NSURL *)theURL title:(NSString *)title {
     if ((self = [super init])) {
-        self.item = theItem;
+        self.url = theURL;
         
         // custom navigation title label so we can fit two lines
         UILabel *titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)] autorelease];
@@ -18,7 +18,7 @@
         titleLabel.numberOfLines = 2;
         titleLabel.adjustsFontSizeToFitWidth = YES;
         titleLabel.lineBreakMode = UILineBreakModeWordWrap;
-        titleLabel.text = item.title;
+        titleLabel.text = title;
         titleLabel.backgroundColor = [UIColor clearColor];
         titleLabel.shadowColor = [UIColor colorWithWhite:0 alpha:0.5];
         titleLabel.textColor = [UIColor whiteColor];
@@ -35,7 +35,7 @@
 
 - (void)dealloc {
     self.webView = nil;
-    self.item = nil;
+    self.url = nil;
 	[super dealloc];
 }
 
@@ -53,7 +53,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    [webView loadRequest:[NSURLRequest requestWithURL:item.link]];
+    [webView loadRequest:[NSURLRequest requestWithURL:url]];
     [self.navigationController setNavigationBarHidden:NO animated:animated];
     [super viewWillAppear:animated];
 }
