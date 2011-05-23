@@ -69,6 +69,10 @@
         [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 }
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
+    return toInterfaceOrientation != UIInterfaceOrientationPortraitUpsideDown;
+}
+
 #pragma mark UITableViewDelegate, UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
