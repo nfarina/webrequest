@@ -247,7 +247,7 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 	NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? [(NSHTTPURLResponse *)response statusCode] : 200;
 	
 	if (conn && response && (status < 200 || (status >= 300 && status != 304))) {
-		NSLog(@"Failed with HTTP status code %i while loading %@", status, self);
+		NSLog(@"Failed with HTTP status code %li while loading %@", status, self);
 		
 		NSMutableDictionary* details = [NSMutableDictionary dictionaryWithObject:@"Received an HTTP status code indicating failure." forKey:NSLocalizedDescriptionKey];
 		[self dispatchError:[NSError errorWithDomain:@"SMWebRequest" code:status userInfo:details]];
