@@ -11,13 +11,6 @@
 @implementation RSSFeedController
 @synthesize feedURL, request, items;
 
-// it's a good idea for controllers to retain the requests they create for easy cancellation.
-// also, implementing our own setter is the recommended practice for ensuring that our target/action listeners are safely removed.
-- (void)setRequest:(SMWebRequest *)value {
-    [request removeTarget:self]; // will cancel the request if it is currently loading.
-    [request release], request = [value retain];
-}
-
 - (id)initWithRSSFeedURL:(NSURL *)URL {
     if ((self = [super init])) {
         self.feedURL = URL;
