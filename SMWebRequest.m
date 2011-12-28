@@ -1,6 +1,20 @@
 #import "SMWebRequest.h"
 
-NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError = @"SMWebRequestError";
+//
+// Utility class for dealing with NSURLConnection's retaining of its delegate.
+//
+
+@interface SMCallbackProxy : NSProxy { id target; }
+- (id)initWithTarget:(id)target;
+- (void)releaseAndClearTarget;
+@end
+@implementation SMCallbackProxy
+- (id)initWithTarget:(id)theTarget { target = theTarget; return self; }
+- (void)releaseAndClearTarget { target = nil; [self release]; }
+- (NSMethodSignature *) methodSignatureForSelector:(SEL)sel { return [target methodSignatureForSelector:sel]; }
+- (void) forwardInvocation:(NSInvocation *)invocation { [invocation setTarget:target]; [invocation invoke]; }
+- (BOOL) respondsToSelector:(SEL)sel { return [target respondsToSelector:sel]; }
+@end
 
 //
 // Utility class for tracking our target/action pairs.
@@ -20,7 +34,29 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 // WebRequest.
 //
 
-@interface SMWebRequest ()
+NSString *const kSMWebRequestComplete = @"SMWebRequestComplete", *const kSMWebRequestError = @"SMWebRequestError";
+NSString *const SMErrorResponseKey = @"response";
+
+// This is a global variable that is only accessed from the main thread, that handles the special case where
+// we want to have been dealloced while our background thread was alive.
+static BOOL was_dealloced = NO;
+
+@interface SMWebRequest () {
+    id<SMWebRequestDelegate> delegate; // not retained
+	id context;
+	
+	NSMutableArray *targetActions;
+	NSURLConnection *connection;
+    SMCallbackProxy *proxy;
+	NSURLRequest *request;
+	NSURLResponse *response;
+	NSMutableData *data;
+	struct {
+		unsigned int started:1;
+		unsigned int cancelled:1;
+		unsigned int wasTemporarilyRedirected:1;
+	} requestFlags;
+}
 @property (nonatomic, assign) id<SMWebRequestDelegate> delegate;
 @property (nonatomic, retain) id context;
 @property (nonatomic, retain) NSMutableArray *targetActions;
@@ -34,17 +70,22 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 @synthesize context, targetActions, delegate, data, request, response, connection;
 
 - (id)initWithURLRequest:(NSURLRequest *)theRequest delegate:(id<SMWebRequestDelegate>)theDelegate context:(id)theContext {
-	if ([super init]) {
+	self = [super init];
+	if (self) {
 		self.request = theRequest;
 		self.delegate = theDelegate;
 		self.context = theContext;
 		self.targetActions = [NSMutableArray array]; 
+        proxy = [[SMCallbackProxy alloc] initWithTarget:self];
 	}
 	return self;
 }
 
 - (void)dealloc {
+    was_dealloced = YES; // in case backgroundProcessingComplete cares.
 	//NSLog(@"Dealloc %@", self);
+    [proxy releaseAndClearTarget]; // don't allow any more calls to be passed through
+    proxy = nil;
 	[self cancel];
 	self.delegate = nil;
 	self.context = nil;
@@ -77,11 +118,13 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 	
 	requestFlags.started = YES;
 	
-	//NSLog(@"Requesting %@", self);
-	
-	self.data = [NSMutableData data];
-	self.connection = [NSURLConnection connectionWithRequest:request delegate:self];
+    //NSLog(@"Requesting %@", self);
+    requestFlags.wasTemporarilyRedirected = NO;
+    self.data = [NSMutableData data];
+    self.connection = [NSURLConnection connectionWithRequest:request delegate:proxy];
 }
+
+- (BOOL)started { return requestFlags.started; }
 
 - (void)cancel {
 	if (requestFlags.cancelled) return; // subsequent calls to this method won't do anything
@@ -177,7 +220,7 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 }
 
 - (void)dispatchError:(NSError *)error {
-
+	
 	// notify the delegate first
 	if ([delegate respondsToSelector:@selector(webRequest:didFailWithError:context:)])
 		[delegate webRequest:self didFailWithError:error context:context];
@@ -205,15 +248,26 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 
 // back on the main thread
 - (void)backgroundProcessingComplete:(id)resultObject {
+
+    // OK, so we want to basically quit without dispatching events if we WOULD have been dealloced if our background
+    // thread wasn't running. So, we'll tentatively release ourself here first, and if we get dealloced then
+    // we'll know to do nothing and exit without calling dispatch on our listeners (which probably are dealloced themselves).
+    was_dealloced = NO;
+    [delegate release];
+	[self release];
+
+    if (was_dealloced) return; // OK, we were dealloced, quick, exit before touching our instance vars (pointers to garbage now)!
+    
+    // don't dispatch events if -cancel was called while we were in the background thread.
 	if (!requestFlags.cancelled)
 		[self dispatchComplete:resultObject];
-	[delegate release];
-	[self release];
 }
 
 #pragma mark NSURLConnection delegate methods
 
 - (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)newRequest redirectResponse:(NSURLResponse *)redirectResponse {
+	if (redirectResponse && [(NSHTTPURLResponse *)redirectResponse statusCode] != 301)
+		requestFlags.wasTemporarilyRedirected = YES;
 	return newRequest; // let it happen
 }
 
@@ -247,9 +301,16 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 	NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? [(NSHTTPURLResponse *)response statusCode] : 200;
 	
 	if (conn && response && (status < 200 || (status >= 300 && status != 304))) {
-		NSLog(@"Failed with HTTP status code %i while loading %@", (int)status, self);
+		NSLog(@"Failed with HTTP status code %ld while loading %@", status, self);
+        
+        SMErrorResponse *error = [[[SMErrorResponse alloc] init] autorelease];
+        error.response = (NSHTTPURLResponse *)response;
+        error.data = data;
 		
-		NSMutableDictionary* details = [NSMutableDictionary dictionaryWithObject:@"Received an HTTP status code indicating failure." forKey:NSLocalizedDescriptionKey];
+		NSMutableDictionary* details = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                        @"Received an HTTP status code indicating failure.", NSLocalizedDescriptionKey,
+                                        error, SMErrorResponseKey,
+                                        nil];
 		[self dispatchError:[NSError errorWithDomain:@"SMWebRequest" code:status userInfo:details]];
 	}
 	else {
@@ -273,4 +334,13 @@ NSString *kSMWebRequestComplete = @"SMWebRequestComplete", *kSMWebRequestError =
 	[self release];
 }
 
+@end
+
+@implementation SMErrorResponse
+@synthesize response, data;
+- (void)dealloc {
+    self.response = nil;
+    self.data = nil;
+    [super dealloc];
+}
 @end
