@@ -31,11 +31,11 @@
 #endif
 
 @private
-	SMXMLElement *parent; // nonretained
-	NSString *name;
-	NSMutableString *value;
-	NSMutableArray *children;
-	NSDictionary *attributes;
+    SMXMLElement *parent; // nonretained
+    NSString *name;
+    NSMutableString *value;
+    NSMutableArray *children;
+    NSDictionary *attributes;
 }
 
 @property (nonatomic, assign) SMXMLElement *parent;
@@ -59,9 +59,9 @@
 #else
 @interface SMXMLDocument : NSObject {
 #endif
-	
+    
 @private
-	SMXMLElement *root;
+    SMXMLElement *root;
 }
 
 @property (nonatomic, retain) SMXMLElement *root;

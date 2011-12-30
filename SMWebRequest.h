@@ -28,13 +28,13 @@
 // can process the NSData in some way on a background thread then return something else.
 
 // Please note that you must continue to hold a reference to SMWebRequest in order to keep it running!
-// SMWebRequest will not retain itself. This means that you can simple nil out your reference to a
+// SMWebRequest will not retain itself. This means that you can simply nil out your reference to a
 // request when you're finished with it and it will cancel itself automatically.
 
 enum {
-	SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
-	SMWebRequestEventError	   = 1 << 1, // selector will be passed a pointer to NSError instance
-	SMWebRequestEventAllEvents = 0xFFFFFFFF
+    SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
+    SMWebRequestEventError     = 1 << 1, // selector will be passed a pointer to NSError instance
+    SMWebRequestEventAllEvents = 0xFFFFFFFF
 };
 typedef NSUInteger SMWebRequestEvents;
 

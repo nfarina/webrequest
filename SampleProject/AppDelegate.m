@@ -11,15 +11,15 @@
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
 
-	// Demonstrate how we can listen globally to web request error events, to implement a systemwide failure message. Apple likes those!
+    // Demonstrate how we can listen globally to web request error events, to implement a systemwide failure message. Apple likes those!
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(webRequestError:) name:kSMWebRequestError object:nil];
-	
-	// Example 1: Make an simple web request to Google.
+    
+    // Example 1: Make an simple web request to Google.
     self.googleRequest = [SMWebRequest requestWithURL:[NSURL URLWithString:@"http://www.google.com"]];
     [googleRequest addTarget:self action:@selector(googleFinished:) forRequestEvents:SMWebRequestEventComplete];
     [googleRequest start];
     
-	// Example 2: Make a simple but extremely nice+performant RSS reader for Hacker News! Courtesy @bvanderveen
+    // Example 2: Make a simple but extremely nice+performant RSS reader for Hacker News! Courtesy @bvanderveen
     
     NSURL *url = [NSURL URLWithString:@"http://news.ycombinator.com/rss"]; // you can really use any RSS url here
     RSSFeedController *home = [[RSSFeedController alloc] initWithRSSFeedURL:url];

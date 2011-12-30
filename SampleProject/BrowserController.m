@@ -38,7 +38,7 @@
     self.titleLabel = nil;
     self.webView = nil;
     self.url = nil;
-	[super dealloc];
+    [super dealloc];
 }
 
 - (void)adjustTitleForOrientation:(UIInterfaceOrientation)orientation {
@@ -85,21 +85,21 @@
 #pragma mark Action Sheet
 
 - (void)actionItemTapped {
-	UIActionSheet *addSheet = [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:nil
-											 destructiveButtonTitle:nil otherButtonTitles:nil] autorelease];
-	
-	[addSheet addButtonWithTitle:@"Open in Safari"];
-	[addSheet addButtonWithTitle:@"Cancel"];
-	[addSheet setCancelButtonIndex:[addSheet numberOfButtons] - 1];
-	[addSheet setActionSheetStyle:UIActionSheetStyleBlackTranslucent];
-	[addSheet showFromToolbar:self.navigationController.toolbar];	
+    UIActionSheet *addSheet = [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:nil
+                                             destructiveButtonTitle:nil otherButtonTitles:nil] autorelease];
+    
+    [addSheet addButtonWithTitle:@"Open in Safari"];
+    [addSheet addButtonWithTitle:@"Cancel"];
+    [addSheet setCancelButtonIndex:[addSheet numberOfButtons] - 1];
+    [addSheet setActionSheetStyle:UIActionSheetStyleBlackTranslucent];
+    [addSheet showFromToolbar:self.navigationController.toolbar];   
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-	NSString *action = [actionSheet buttonTitleAtIndex:buttonIndex];
-	if ([action isEqualToString:@"Open in Safari"]) {
-		[[UIApplication sharedApplication] openURL:webView.request.URL];
-	}
+    NSString *action = [actionSheet buttonTitleAtIndex:buttonIndex];
+    if ([action isEqualToString:@"Open in Safari"]) {
+        [[UIApplication sharedApplication] openURL:webView.request.URL];
+    }
 }
 
 @end
