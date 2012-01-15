@@ -268,7 +268,12 @@ static BOOL was_dealloced = NO;
 - (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)newRequest redirectResponse:(NSURLResponse *)redirectResponse {
     if (redirectResponse && [(NSHTTPURLResponse *)redirectResponse statusCode] != 301)
         requestFlags.wasTemporarilyRedirected = YES;
-    return newRequest; // let it happen
+    
+    // see if our delegate cares about this
+    if ([delegate respondsToSelector:@selector(webRequest:willSendRequest:redirectResponse:)])
+        return [delegate webRequest:self willSendRequest:newRequest redirectResponse:redirectResponse];
+    else
+        return newRequest; // let it happen
 }
 
 - (void)connection:(NSURLConnection *)conn didReceiveResponse:(NSURLResponse *)aResponse {

@@ -78,6 +78,9 @@ typedef NSUInteger SMWebRequestEvents;
 @protocol SMWebRequestDelegate <NSObject>
 @optional
 
+// called on the main thread if applicable, behaves just like NSURLConnection.
+- (NSURLRequest *)webRequest:(SMWebRequest *)webRequest willSendRequest:(NSURLRequest *)newRequest redirectResponse:(NSURLResponse *)redirectResponse;
+
 // called on a background thread and result will be passed to the targets, 
 // otherwise if the delegate is nil the data will be passed to the targets.
 - (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context;
