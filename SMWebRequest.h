@@ -39,6 +39,7 @@ enum {
 typedef NSUInteger SMWebRequestEvents;
 
 @protocol SMWebRequestDelegate;
+@class SMCallbackProxy;
 
 @interface SMWebRequest : NSObject
 #if __IPHONE_OS_VERSION_MAX_ALLOWED <= __IPHONE_4_3
@@ -46,6 +47,22 @@ typedef NSUInteger SMWebRequestEvents;
 #else
 <NSURLConnectionDataDelegate>
 #endif
+{
+    id<SMWebRequestDelegate> delegate; // not retained
+    id context;
+    
+    NSMutableArray *targetActions;
+    NSURLConnection *connection;
+    SMCallbackProxy *proxy;
+    NSURLRequest *request;
+    NSURLResponse *response;
+    NSMutableData *data;
+    struct {
+        unsigned int started:1;
+        unsigned int cancelled:1;
+        unsigned int wasTemporarilyRedirected:1;
+    } requestFlags;
+}
 
 @property (nonatomic, readonly) BOOL started;
 @property (nonatomic, readonly, retain) id context;
@@ -100,7 +117,10 @@ extern NSString *const SMErrorResponseKey; // SMErrorResponse
 
 // Special wrapper class for passing back information about a response+data inside an NSError.
 // always associated with SMErrorResponseKey.
-@interface SMErrorResponse : NSObject
+@interface SMErrorResponse : NSObject {
+    NSHTTPURLResponse *response;
+    NSData *data;
+}
 @property (nonatomic, retain) NSHTTPURLResponse *response;
 @property (nonatomic, retain) NSData *data;
 @end

@@ -41,22 +41,7 @@ NSString *const SMErrorResponseKey = @"response";
 // we want to have been dealloced while our background thread was alive.
 static BOOL was_dealloced = NO;
 
-@interface SMWebRequest () {
-    id<SMWebRequestDelegate> delegate; // not retained
-    id context;
-    
-    NSMutableArray *targetActions;
-    NSURLConnection *connection;
-    SMCallbackProxy *proxy;
-    NSURLRequest *request;
-    NSURLResponse *response;
-    NSMutableData *data;
-    struct {
-        unsigned int started:1;
-        unsigned int cancelled:1;
-        unsigned int wasTemporarilyRedirected:1;
-    } requestFlags;
-}
+@interface SMWebRequest ()
 @property (nonatomic, assign) id<SMWebRequestDelegate> delegate;
 @property (nonatomic, retain) id context;
 @property (nonatomic, retain) NSMutableArray *targetActions;
