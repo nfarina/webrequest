@@ -27,9 +27,13 @@
 // then passed back to event listeners as NSData. Optionally, you can specify a delegate which
 // can process the NSData in some way on a background thread then return something else.
 
-// Please note that you must continue to hold a reference to SMWebRequest in order to keep it running!
-// SMWebRequest will not retain itself. This means that you can simply nil out your reference to a
-// request when you're finished with it and it will cancel itself automatically.
+// While the SMWebRequest's internal connection to the server is open, it will retain itself.
+// This means you can create an autoreleased SMWebRequest without retaining it and subscribe
+// to its events for a quick and dirty (non-cancellable) request.
+
+// Please note that this means you MUST remove any event listeners before releasing
+// your SMWebRequest! Otherwise the request may still be alive and will attempt to execute
+// events on your object (which may be dealloc'd at this point).
 
 enum {
     SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
@@ -39,7 +43,6 @@ enum {
 typedef NSUInteger SMWebRequestEvents;
 
 @protocol SMWebRequestDelegate;
-@class SMCallbackProxy;
 
 @interface SMWebRequest : NSObject
 #if __IPHONE_OS_VERSION_MAX_ALLOWED <= __IPHONE_4_3
@@ -53,7 +56,6 @@ typedef NSUInteger SMWebRequestEvents;
     
     NSMutableArray *targetActions;
     NSURLConnection *connection;
-    SMCallbackProxy *proxy;
     NSURLRequest *request;
     NSURLResponse *response;
     NSMutableData *data;

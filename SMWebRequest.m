@@ -1,27 +1,11 @@
 #import "SMWebRequest.h"
 
 //
-// Utility class for dealing with NSURLConnection's retaining of its delegate.
-//
-
-@interface SMCallbackProxy : NSProxy { id target; }
-- (id)initWithTarget:(id)target;
-- (void)releaseAndClearTarget;
-@end
-@implementation SMCallbackProxy
-- (id)initWithTarget:(id)theTarget { target = theTarget; return self; }
-- (void)releaseAndClearTarget { target = nil; [self release]; }
-- (NSMethodSignature *) methodSignatureForSelector:(SEL)sel { return [target methodSignatureForSelector:sel]; }
-- (void) forwardInvocation:(NSInvocation *)invocation { [invocation setTarget:target]; [invocation invoke]; }
-- (BOOL) respondsToSelector:(SEL)sel { return [target respondsToSelector:sel]; }
-@end
-
-//
 // Utility class for tracking our target/action pairs.
 //
 
 @interface SMTargetAction : NSObject {
-    @package
+@package
     id target;
     SEL action;
     SMWebRequestEvents events;
@@ -36,10 +20,6 @@
 
 NSString *const kSMWebRequestComplete = @"SMWebRequestComplete", *const kSMWebRequestError = @"SMWebRequestError";
 NSString *const SMErrorResponseKey = @"response";
-
-// This is a global variable that is only accessed from the main thread, that handles the special case where
-// we want to have been dealloced while our background thread was alive.
-static BOOL was_dealloced = NO;
 
 @interface SMWebRequest ()
 @property (nonatomic, assign) id<SMWebRequestDelegate> delegate;
@@ -61,16 +41,12 @@ static BOOL was_dealloced = NO;
         self.delegate = theDelegate;
         self.context = theContext;
         self.targetActions = [NSMutableArray array]; 
-        proxy = [[SMCallbackProxy alloc] initWithTarget:self];
     }
     return self;
 }
 
 - (void)dealloc {
-    was_dealloced = YES; // in case backgroundProcessingComplete cares.
     //NSLog(@"Dealloc %@", self);
-    [proxy releaseAndClearTarget]; // don't allow any more calls to be passed through
-    proxy = nil;
     [self cancel];
     self.delegate = nil;
     self.context = nil;
@@ -104,9 +80,9 @@ static BOOL was_dealloced = NO;
     requestFlags.started = YES;
     
     //NSLog(@"Requesting %@", self);
-    requestFlags.wasTemporarilyRedirected = NO;
+
     self.data = [NSMutableData data];
-    self.connection = [NSURLConnection connectionWithRequest:request delegate:proxy];
+    self.connection = [NSURLConnection connectionWithRequest:request delegate:self];
 }
 
 - (BOOL)started { return requestFlags.started; }
@@ -233,19 +209,10 @@ static BOOL was_dealloced = NO;
 
 // back on the main thread
 - (void)backgroundProcessingComplete:(id)resultObject {
-
-    // OK, so we want to basically quit without dispatching events if we WOULD have been dealloced if our background
-    // thread wasn't running. So, we'll tentatively release ourself here first, and if we get dealloced then
-    // we'll know to do nothing and exit without calling dispatch on our listeners (which probably are dealloced themselves).
-    was_dealloced = NO;
-    [delegate release];
-    [self release];
-
-    if (was_dealloced) return; // OK, we were dealloced, quick, exit before touching our instance vars (pointers to garbage now)!
-    
-    // don't dispatch events if -cancel was called while we were in the background thread.
     if (!requestFlags.cancelled)
-        [self dispatchComplete:resultObject];
+		[self dispatchComplete:resultObject];
+	[delegate release];
+	[self release];
 }
 
 #pragma mark NSURLConnection delegate methods
