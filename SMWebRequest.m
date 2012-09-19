@@ -257,7 +257,7 @@ NSString *const SMErrorResponseKey = @"response";
     
     NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? [(NSHTTPURLResponse *)response statusCode] : 200;
     
-    if (conn && response && (status < 200 || (status >= 300 && status != 304))) {
+    if (conn && response && status >= 400) {
         NSLog(@"Failed with HTTP status code %i while loading %@", (int)status, self);
         
         SMErrorResponse *error = [[[SMErrorResponse alloc] init] autorelease];
