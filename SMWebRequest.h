@@ -22,6 +22,15 @@
  THE SOFTWARE. 
  */
 
+/*
+ 
+ SMWebRequest
+ ------------
+ Created by Nick Farina (nfarina@gmail.com) and Benjamin van der Veen (b@bvanderveen.com)
+ Version 1.0
+ 
+ */
+
 // SMWebRequest encapsulates a single HTTP request and response. It is designed to be less verbose
 // and simpler to use than NSURLConnection. The server response is buffered completely into memory
 // then passed back to event listeners as NSData. Optionally, you can specify a delegate which
