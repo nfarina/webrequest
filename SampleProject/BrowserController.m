@@ -19,12 +19,12 @@
         titleLabel.font = [UIFont boldSystemFontOfSize:14];
         titleLabel.numberOfLines = 2;
         titleLabel.adjustsFontSizeToFitWidth = YES;
-        titleLabel.lineBreakMode = UILineBreakModeWordWrap;
+        titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
         titleLabel.text = title;
         titleLabel.backgroundColor = [UIColor clearColor];
         titleLabel.shadowColor = [UIColor colorWithWhite:0 alpha:0.5];
         titleLabel.textColor = [UIColor whiteColor];
-        titleLabel.textAlignment = UITextAlignmentCenter;
+        titleLabel.textAlignment = NSTextAlignmentCenter;
         
         UIBarButtonItem *action = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self 
                                                                                  action:@selector(actionItemTapped)] autorelease];
