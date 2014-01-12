@@ -3,7 +3,7 @@
 
 @interface RSSItem : NSObject
 @property (nonatomic, copy) NSString *title;
-@property (nonatomic, retain) NSURL *link, *comments;
+@property (nonatomic, strong) NSURL *link, *comments;
 
 // creates a new Item by parsing an XML element
 + (RSSItem *)itemWithElement:(SMXMLElement *)element;

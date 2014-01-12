@@ -1,9 +1,9 @@
 #import "BrowserController.h"
 
 @interface BrowserController ()
-@property (nonatomic, retain) UILabel *titleLabel;
-@property (nonatomic, retain) UIWebView *webView;
-@property (nonatomic, retain) NSURL *url;
+@property (nonatomic, strong) UILabel *titleLabel;
+@property (nonatomic, strong) UIWebView *webView;
+@property (nonatomic, strong) NSURL *url;
 @end
 
 @implementation BrowserController
@@ -15,31 +15,24 @@
         self.title = title;
         
         // custom navigation title label so we can fit two lines
-        self.titleLabel = [[[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)] autorelease];
-        titleLabel.font = [UIFont boldSystemFontOfSize:14];
+        self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+        titleLabel.font = [UIFont systemFontOfSize:14];
         titleLabel.numberOfLines = 2;
         titleLabel.adjustsFontSizeToFitWidth = YES;
         titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
         titleLabel.text = title;
         titleLabel.backgroundColor = [UIColor clearColor];
-        titleLabel.shadowColor = [UIColor colorWithWhite:0 alpha:0.5];
         titleLabel.textColor = [UIColor whiteColor];
         titleLabel.textAlignment = NSTextAlignmentCenter;
         
-        UIBarButtonItem *action = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self 
-                                                                                 action:@selector(actionItemTapped)] autorelease];
+        UIBarButtonItem *action = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self 
+                                                                                 action:@selector(actionItemTapped)];
         
         self.toolbarItems = [NSArray arrayWithObject:action];
     }
     return self;
 }
 
-- (void)dealloc {
-    self.titleLabel = nil;
-    self.webView = nil;
-    self.url = nil;
-    [super dealloc];
-}
 
 - (void)adjustTitleForOrientation:(UIInterfaceOrientation)orientation {
     // use our custom title view in portrait to fit two lines of text
@@ -47,7 +40,7 @@
 }
 
 - (void)loadView {
-    self.webView = [[[UIWebView alloc] initWithFrame:CGRectZero] autorelease];
+    self.webView = [[UIWebView alloc] initWithFrame:CGRectZero];
     webView.delegate = self;
     webView.scalesPageToFit = YES;
     
@@ -85,8 +78,8 @@
 #pragma mark Action Sheet
 
 - (void)actionItemTapped {
-    UIActionSheet *addSheet = [[[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:nil
-                                             destructiveButtonTitle:nil otherButtonTitles:nil] autorelease];
+    UIActionSheet *addSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:nil
+                                             destructiveButtonTitle:nil otherButtonTitles:nil];
     
     [addSheet addButtonWithTitle:@"Open in Safari"];
     [addSheet addButtonWithTitle:@"Cancel"];

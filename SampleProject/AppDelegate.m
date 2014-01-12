@@ -21,16 +21,19 @@
 
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:home];
     nav.toolbarHidden = NO;
-    nav.toolbar.barStyle = UIBarStyleBlack;
     
     // Mimic the HN site.
     home.title = @"Hacker News";
     home.tableView.backgroundColor = [UIColor colorWithRed:246.0/255.0 green:246.0/255.0 blue:239.0/255.0 alpha:1];
-    nav.navigationBar.tintColor = [UIColor colorWithRed:235.0/255.0 green:120.0/255.0 blue:31.0/255.0 alpha:1];
+    nav.navigationBar.barTintColor = [UIColor colorWithRed:235.0/255.0 green:120.0/255.0 blue:31.0/255.0 alpha:1];
+    nav.navigationBar.tintColor = [UIColor whiteColor];
+    nav.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName : [UIColor whiteColor]};
     
-    UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    [window addSubview:nav.view];
-    [window makeKeyAndVisible];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.rootViewController = nav;
+    [self.window makeKeyAndVisible];
 }
 
 // Callback from Example 1: we simply get an NSData with the server response.
@@ -45,7 +48,7 @@
     static NSString *message = @"You appear to be offline. Please try again later.";
     
     if (!displayedOfflineAlert) {
-        UIAlertView *alertView = [[[UIAlertView alloc] initWithTitle:title message:message delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil] autorelease];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:title message:message delegate:self cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
         [alertView show];
         displayedOfflineAlert = YES;
     }

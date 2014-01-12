@@ -4,7 +4,7 @@
 @synthesize title, link, comments;
 
 + (RSSItem *)itemWithElement:(SMXMLElement *)element {
-    RSSItem *item = [[RSSItem new] autorelease];
+    RSSItem *item = [RSSItem new];
     item.title = [element childNamed:@"title"].value;
 
     if ([element childNamed:@"link"])
@@ -16,11 +16,6 @@
     return item;
 }
 
-- (void)dealloc {
-    self.title = nil;
-    self.link = nil;
-    [super dealloc];
-}
 
 + (SMWebRequest *)requestForItemsWithURL:(NSURL *)URL {
     
