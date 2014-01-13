@@ -27,7 +27,7 @@
  SMWebRequest
  ------------
  Created by Nick Farina (nfarina@gmail.com) and Benjamin van der Veen (b@bvanderveen.com)
- Version 1.0
+ Version 1.1
  
  */
 
@@ -37,12 +37,8 @@
 // can process the NSData in some way on a background thread then return something else.
 
 // While the SMWebRequest's internal connection to the server is open, it will retain itself.
-// This means you can create an autoreleased SMWebRequest without retaining it and subscribe
+// This means you can create a new SMWebRequest without storing it in an instance variable and subscribe
 // to its events for a quick and dirty (non-cancellable) request.
-
-// Please note that this means you MUST remove any event listeners before releasing
-// your SMWebRequest! Otherwise the request may still be alive and will attempt to execute
-// events on your object (which may be dealloc'd at this point).
 
 enum {
     SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
@@ -53,27 +49,7 @@ typedef NSUInteger SMWebRequestEvents;
 
 @protocol SMWebRequestDelegate;
 
-@interface SMWebRequest : NSObject
-#if __IPHONE_OS_VERSION_MAX_ALLOWED <= __IPHONE_4_3
-<NSURLConnectionDelegate> 
-#else
-<NSURLConnectionDataDelegate>
-#endif
-{
-    id<SMWebRequestDelegate> __weak delegate; // not retained
-    id context;
-    
-    NSMutableArray *targetActions;
-    NSURLConnection *connection;
-    NSURLRequest *request;
-    NSURLResponse *response;
-    NSMutableData *data;
-    struct {
-        unsigned int started:1;
-        unsigned int cancelled:1;
-        unsigned int wasTemporarilyRedirected:1;
-    } requestFlags;
-}
+@interface SMWebRequest : NSObject <NSURLConnectionDataDelegate>
 
 @property (nonatomic, readonly) BOOL started;
 @property (nonatomic, readonly, strong) id context;
@@ -92,7 +68,7 @@ typedef NSUInteger SMWebRequestEvents;
 - (void)start;
 - (void)cancel;
 
-// register interest. does not retain target. action can take one or two arguments; 
+// register interest. action can take one or two arguments;
 // first is the result object returned by the delegate, second is the context.
 - (void)addTarget:(id)target action:(SEL)action forRequestEvents:(SMWebRequestEvents)event;
 

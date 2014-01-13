@@ -22,17 +22,17 @@ NSString *const kSMWebRequestComplete = @"SMWebRequestComplete", *const kSMWebRe
 NSString *const SMErrorResponseKey = @"response";
 
 @interface SMWebRequest ()
-@property (nonatomic, weak) id<SMWebRequestDelegate> delegate;
+@property (nonatomic, unsafe_unretained) id<SMWebRequestDelegate> delegate;
 @property (nonatomic, strong) id context;
 @property (nonatomic, strong) NSMutableArray *targetActions;
 @property (nonatomic, strong) NSMutableData *data;
 @property (nonatomic, strong) NSURLRequest *request;
 @property (nonatomic, strong) NSURLResponse *response;
 @property (nonatomic, strong) NSURLConnection *connection;
+@property (nonatomic, assign) BOOL started, cancelled;
 @end
 
 @implementation SMWebRequest
-@synthesize context, targetActions, delegate, data, request, response, connection;
 
 - (id)initWithURLRequest:(NSURLRequest *)theRequest delegate:(id<SMWebRequestDelegate>)theDelegate context:(id)theContext {
     self = [super init];
@@ -68,36 +68,34 @@ NSString *const SMErrorResponseKey = @"response";
 }
 
 - (void)start {
-    if (requestFlags.started) return; // subsequent calls to this method won't do anything
+    if (self.started) return; // subsequent calls to this method won't do anything
     
-    requestFlags.started = YES;
+    self.started = YES;
     
     //NSLog(@"Requesting %@", self);
 
     self.data = [NSMutableData data];
-    self.connection = [NSURLConnection connectionWithRequest:request delegate:self];
+    self.connection = [NSURLConnection connectionWithRequest:self.request delegate:self];
 }
 
-- (BOOL)started { return requestFlags.started; }
-
 - (void)cancel {
-    if (requestFlags.cancelled) return; // subsequent calls to this method won't do anything
+    if (self.cancelled) return; // subsequent calls to this method won't do anything
     
     // the only thing that can actually be "cancelled" is the NSURLConnection. Background thread processing can't be
     // cancelled since the background thread must run to completion or else you end up with god knows what on the heap.
-    if (connection) {
+    if (self.connection) {
         //NSLog(@"Cancelling %@", self);
-        [connection cancel];
+        [self.connection cancel];
         self.connection = nil;
     }
-    requestFlags.cancelled = YES;
+    self.cancelled = YES;
     self.context = nil; // you'll never hear from us again.
 }
 
 #pragma mark Target/Action management
 
 - (SMTargetAction *)targetActionForTarget:(id)target action:(SEL)action {
-    for(SMTargetAction *ta in targetActions)
+    for(SMTargetAction *ta in self.targetActions)
         if (ta->target == target && (ta->action == action || !action))
             return ta;
     
@@ -112,7 +110,7 @@ NSString *const SMErrorResponseKey = @"response";
         ta = [[SMTargetAction alloc] init];
         ta->target = target;
         ta->action = action;
-        [targetActions addObject:ta];
+        [self.targetActions addObject:ta];
     }
     
     ta->events |= events;
@@ -130,10 +128,10 @@ NSString *const SMErrorResponseKey = @"response";
         ta->events -= toRemove;
         
         if (!ta->events)
-            [targetActions removeObject:ta];        
+            [self.targetActions removeObject:ta];
     }
     
-    if (![targetActions count])
+    if (![self.targetActions count])
         [self cancel];
 }
 
@@ -144,7 +142,7 @@ NSString *const SMErrorResponseKey = @"response";
 - (NSMutableArray *)targetActionsForEvents:(SMWebRequestEvents)events {
     NSMutableArray *resultTargetActions = [NSMutableArray array];
     
-    for(SMTargetAction *ta in targetActions)
+    for(SMTargetAction *ta in self.targetActions)
         if ((ta->events & events) != 0) [resultTargetActions addObject:ta];
     
     return resultTargetActions;
@@ -159,7 +157,7 @@ NSString *const SMErrorResponseKey = @"response";
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
     for (SMTargetAction *ta in [self targetActionsForEvents:events])
-        [ta->target performSelector:ta->action withObject:arg withObject:context];
+        [ta->target performSelector:ta->action withObject:arg withObject:self.context];
     
     #pragma clang diagnostic pop
 
@@ -170,8 +168,8 @@ NSString *const SMErrorResponseKey = @"response";
 - (void)dispatchComplete:(id)resultObject {
     
     // notify the delegate first
-    if ([delegate respondsToSelector:@selector(webRequest:didCompleteWithResult:context:)])
-        [delegate webRequest:self didCompleteWithResult:resultObject context:context];      
+    if ([self.delegate respondsToSelector:@selector(webRequest:didCompleteWithResult:context:)])
+        [self.delegate webRequest:self didCompleteWithResult:resultObject context:self.context];
     
     // notify event listeners
     [self dispatchEvents:SMWebRequestEventComplete withArgument:resultObject];
@@ -183,8 +181,8 @@ NSString *const SMErrorResponseKey = @"response";
 - (void)dispatchError:(NSError *)error {
     
     // notify the delegate first
-    if ([delegate respondsToSelector:@selector(webRequest:didFailWithError:context:)])
-        [delegate webRequest:self didFailWithError:error context:context];
+    if ([self.delegate respondsToSelector:@selector(webRequest:didFailWithError:context:)])
+        [self.delegate webRequest:self didFailWithError:error context:self.context];
     
     // notify event listeners
     [self dispatchEvents:SMWebRequestEventError withArgument:error];
@@ -200,8 +198,8 @@ NSString *const SMErrorResponseKey = @"response";
     
         id resultObject = theData;
         
-        if ([delegate respondsToSelector:@selector(webRequest:resultObjectForData:context:)])
-            resultObject = [delegate webRequest:self resultObjectForData:theData context:context];
+        if ([self.delegate respondsToSelector:@selector(webRequest:resultObjectForData:context:)])
+            resultObject = [self.delegate webRequest:self resultObjectForData:theData context:self.context];
         
         [self performSelectorOnMainThread:@selector(backgroundProcessingComplete:) withObject:resultObject waitUntilDone:NO];
     }
@@ -209,30 +207,27 @@ NSString *const SMErrorResponseKey = @"response";
 
 // back on the main thread
 - (void)backgroundProcessingComplete:(id)resultObject {
-    if (!requestFlags.cancelled)
+    if (!self.cancelled)
 		[self dispatchComplete:resultObject];
 }
 
 #pragma mark NSURLConnection delegate methods
 
 - (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)newRequest redirectResponse:(NSURLResponse *)redirectResponse {
-    if (redirectResponse && [(NSHTTPURLResponse *)redirectResponse statusCode] != 301)
-        requestFlags.wasTemporarilyRedirected = YES;
-    
     // see if our delegate cares about this
-    if ([delegate respondsToSelector:@selector(webRequest:willSendRequest:redirectResponse:)])
-        return [delegate webRequest:self willSendRequest:newRequest redirectResponse:redirectResponse];
+    if ([self.delegate respondsToSelector:@selector(webRequest:willSendRequest:redirectResponse:)])
+        return [self.delegate webRequest:self willSendRequest:newRequest redirectResponse:redirectResponse];
     else
         return newRequest; // let it happen
 }
 
 - (void)connection:(NSURLConnection *)conn didReceiveResponse:(NSURLResponse *)aResponse {
     self.response = aResponse;
-    [data setLength:0];
+    [self.data setLength:0];
 }
 
 - (void)connection:(NSURLConnection *)conn didReceiveData:(NSData *)moreData {
-    [data appendData:moreData];
+    [self.data appendData:moreData];
 }
 
 - (void)connection:(NSURLConnection *)conn didFailWithError:(NSError *)error {
@@ -252,14 +247,14 @@ NSString *const SMErrorResponseKey = @"response";
     
      // we must retain ourself before we call handlers, in case they release us!
     
-    NSInteger status = [response isKindOfClass:[NSHTTPURLResponse class]] ? [(NSHTTPURLResponse *)response statusCode] : 200;
+    NSInteger status = [self.response isKindOfClass:[NSHTTPURLResponse class]] ? [(NSHTTPURLResponse *)self.response statusCode] : 200;
     
-    if (conn && response && status >= 400) {
+    if (conn && self.response && status >= 400) {
         NSLog(@"Failed with HTTP status code %i while loading %@", (int)status, self);
         
         SMErrorResponse *error = [[SMErrorResponse alloc] init];
-        error.response = (NSHTTPURLResponse *)response;
-        error.data = data;
+        error.response = (NSHTTPURLResponse *)self.response;
+        error.data = self.data;
         
         NSMutableDictionary* details = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                         @"Received an HTTP status code indicating failure.", NSLocalizedDescriptionKey,
@@ -268,17 +263,17 @@ NSString *const SMErrorResponseKey = @"response";
         [self dispatchError:[NSError errorWithDomain:@"SMWebRequest" code:status userInfo:details]];
     }
     else {
-        if ([delegate respondsToSelector:@selector(webRequest:resultObjectForData:context:)]) {
+        if ([self.delegate respondsToSelector:@selector(webRequest:resultObjectForData:context:)]) {
             
             // neither us nor our delegate can get dealloced whilst processing on the background
             // thread or else the background thread could try to do stuff with pointers to garbage.
             // thus we need have a mechanism for keeping ourselves alive during the background
             // processing.
             
-            [self performSelectorInBackground:@selector(processDataInBackground:) withObject:data];
+            [self performSelectorInBackground:@selector(processDataInBackground:) withObject:self.data];
         }
         else
-            [self dispatchComplete:data];
+            [self dispatchComplete:self.data];
     }
     
     self.connection = nil;
