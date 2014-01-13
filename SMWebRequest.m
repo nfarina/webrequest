@@ -190,7 +190,7 @@ NSString *const SMErrorResponseKey = @"response";
     [self dispatchEvents:SMWebRequestEventError withArgument:error];
     
     // notify the world last
-    NSDictionary *info = [NSDictionary dictionaryWithObject:error forKey:NSUnderlyingErrorKey];
+    NSDictionary *info = @{NSUnderlyingErrorKey: error};
     [[NSNotificationCenter defaultCenter] postNotificationName:kSMWebRequestError object:self userInfo:info];
 }
 

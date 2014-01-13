@@ -1,7 +1,6 @@
 #import "RSSItem.h"
 
 @implementation RSSItem
-@synthesize title, link, comments;
 
 + (RSSItem *)itemWithElement:(SMXMLElement *)element {
     RSSItem *item = [RSSItem new];
@@ -29,7 +28,7 @@
 + (id)webRequest:(SMWebRequest *)webRequest resultObjectForData:(NSData *)data context:(id)context {
 
     // We do this gnarly parsing on a background thread to keep the UI responsive.
-    SMXMLDocument *document = [SMXMLDocument documentWithData:data];
+    SMXMLDocument *document = [SMXMLDocument documentWithData:data error:NULL];
     
     // Select the bits in which we're interested.
     NSArray *itemsXml = [[document.root childNamed:@"channel"] childrenNamed:@"item"];

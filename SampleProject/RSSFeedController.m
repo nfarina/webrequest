@@ -9,7 +9,6 @@
 @end
 
 @implementation RSSFeedController
-@synthesize feedURL, request, items;
 
 - (id)initWithRSSFeedURL:(NSURL *)URL {
     if ((self = [super init])) {
@@ -19,20 +18,9 @@
         UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh 
                                                                                   target:self 
                                                                                   action:@selector(refresh)];
-        self.toolbarItems = [NSArray arrayWithObject:refresh];
+        self.toolbarItems = @[refresh];
     }
     return self;
-}
-
-- (void)dealloc {
-    self.request = nil;
-}
-
-// it's a good idea for controllers to retain the requests they create for easy cancellation.
-// also, implementing our own setter is the recommended practice for ensuring that our target/action listeners are safely removed.
-- (void)setRequest:(SMWebRequest *)value {
-    [request removeTarget:self]; // will cancel the request if it is currently loading.
-    request = value;
 }
 
 - (void)loadView {
@@ -41,16 +29,17 @@
 }
 
 - (void)refresh {
-    self.request = [RSSItem requestForItemsWithURL:feedURL];
+    [self.request cancel]; // in case one was running already
+    self.request = [RSSItem requestForItemsWithURL:self.feedURL];
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    [request addTarget:self action:@selector(requestComplete:) forRequestEvents:SMWebRequestEventComplete];
-    [request addTarget:self action:@selector(requestError:) forRequestEvents:SMWebRequestEventError];
-    [request start];
+    [self.request addTarget:self action:@selector(requestComplete:) forRequestEvents:SMWebRequestEventComplete];
+    [self.request addTarget:self action:@selector(requestError:) forRequestEvents:SMWebRequestEventError];
+    [self.request start];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    if (!items) [self refresh];
+    if (!self.items) [self refresh];
     [super viewWillAppear:animated];
 }
 
@@ -74,7 +63,7 @@
 #pragma mark UITableViewDelegate, UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return items.count;
+    return self.items.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -89,20 +78,20 @@
         cell.textLabel.numberOfLines = 2;
     }
     
-    RSSItem *item = [items objectAtIndex:indexPath.row];
+    RSSItem *item = (self.items)[indexPath.row];
     cell.textLabel.text = item.title;
     cell.accessoryType = item.comments ? UITableViewCellAccessoryDetailButton : UITableViewCellAccessoryDisclosureIndicator;
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    RSSItem *item = [items objectAtIndex:indexPath.row];
+    RSSItem *item = (self.items)[indexPath.row];
     BrowserController *itemController = [[BrowserController alloc] initWithURL:item.link title:item.title];
     [self.navigationController pushViewController:itemController animated:YES];
 }
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    RSSItem *item = [items objectAtIndex:indexPath.row];
+    RSSItem *item = (self.items)[indexPath.row];
     BrowserController *itemController = [[BrowserController alloc] initWithURL:item.comments title:item.title];
     [self.navigationController pushViewController:itemController animated:YES];
 }
