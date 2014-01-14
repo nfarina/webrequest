@@ -1,6 +1,7 @@
 #import "AppDelegate.h"
 #import "RSSFeedController.h"
 #import "SMWebRequest.h"
+#import "SMURLImageView.h"
 
 @implementation AppDelegate
 

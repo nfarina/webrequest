@@ -1,6 +1,7 @@
 #import "RSSFeedController.h"
 #import "RSSItem.h"
 #import "BrowserController.h"
+#import "SMURLImageView.h"
 
 @interface RSSFeedController ()
 @property (nonatomic, strong) NSURL *feedURL;
@@ -18,7 +19,13 @@
         UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh 
                                                                                   target:self 
                                                                                   action:@selector(refresh)];
-        self.toolbarItems = @[refresh];
+        
+        UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL];
+        
+        SMURLImageView *imageView = [[SMURLImageView alloc] initWithImageURL:[NSURL URLWithString:@"https://news.ycombinator.com/y18.gif"]];
+        UIBarButtonItem *logo = [[UIBarButtonItem alloc] initWithCustomView:imageView];
+        
+        self.toolbarItems = @[refresh, flexibleSpace, logo];
     }
     return self;
 }
