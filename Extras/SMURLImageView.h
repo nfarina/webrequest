@@ -1,5 +1,7 @@
 
-// Just a UIImageView that loads its image from a URL.
+//
+// UIImageView that loads its image asynchronously from a URL.
+//
 
 @protocol SMURLImageViewDelegate;
 
@@ -17,5 +19,6 @@
 
 @optional
 - (void)URLImageViewDidLoadImage:(SMURLImageView *)imageView;
+- (void)URLImageView:(SMURLImageView *)imageView didFailLoadWithError:(NSError *)error;
 
 @end

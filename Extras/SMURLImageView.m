@@ -25,6 +25,7 @@
 		self.image = nil;
 		self.request = URL ? [SMWebRequest requestWithURL:URL delegate:nil context:nil] : nil;
 		[self.request addTarget:self action:@selector(imageLoaded:) forRequestEvents:SMWebRequestEventComplete];
+		[self.request addTarget:self action:@selector(imageError:) forRequestEvents:SMWebRequestEventError];
 		[self.request start];
 	}
 }
@@ -38,6 +39,12 @@
 	
 	if ([self.delegate respondsToSelector:@selector(URLImageViewDidLoadImage:)])
 		[self.delegate URLImageViewDidLoadImage:self];
+}
+
+- (void)imageError:(NSError *)error {
+    
+    if ([self.delegate respondsToSelector:@selector(URLImageView:didFailLoadWithError:)])
+        [self.delegate URLImageView:self didFailLoadWithError:error];
 }
 
 @end
