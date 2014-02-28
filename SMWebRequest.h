@@ -40,12 +40,11 @@
 // This means you can create a new SMWebRequest without storing it in an instance variable and subscribe
 // to its events for a quick and dirty (non-cancellable) request.
 
-enum {
+typedef NS_OPTIONS(NSUInteger, SMWebRequestEvents) {
     SMWebRequestEventComplete  = 1 << 0, // selector will be passed the result pointer
     SMWebRequestEventError     = 1 << 1, // selector will be passed a pointer to NSError instance
     SMWebRequestEventAllEvents = 0xFFFFFFFF
 };
-typedef NSUInteger SMWebRequestEvents;
 
 @protocol SMWebRequestDelegate;
 
@@ -104,10 +103,7 @@ extern NSString *const SMErrorResponseKey; // SMErrorResponse
 
 // Special wrapper class for passing back information about a response+data inside an NSError.
 // always associated with SMErrorResponseKey.
-@interface SMErrorResponse : NSObject {
-    NSHTTPURLResponse *response;
-    NSData *data;
-}
+@interface SMErrorResponse : NSObject
 @property (nonatomic, strong) NSHTTPURLResponse *response;
 @property (nonatomic, strong) NSData *data;
 @end

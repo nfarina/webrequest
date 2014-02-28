@@ -4,12 +4,10 @@
 // Utility class for tracking our target/action pairs.
 //
 
-@interface SMTargetAction : NSObject {
-@package
-    id target;
-    SEL action;
-    SMWebRequestEvents events;
-}
+@interface SMTargetAction : NSObject
+@property (nonatomic, unsafe_unretained) id target;
+@property (nonatomic, assign) SEL action;
+@property (nonatomic, assign) SMWebRequestEvents events;
 @end
 @implementation SMTargetAction
 @end
@@ -96,7 +94,7 @@ NSString *const SMErrorResponseKey = @"response";
 
 - (SMTargetAction *)targetActionForTarget:(id)target action:(SEL)action {
     for(SMTargetAction *ta in self.targetActions)
-        if (ta->target == target && (ta->action == action || !action))
+        if (ta.target == target && (ta.action == action || !action))
             return ta;
     
     return nil;
@@ -108,12 +106,12 @@ NSString *const SMErrorResponseKey = @"response";
     
     if (!ta) {
         ta = [[SMTargetAction alloc] init];
-        ta->target = target;
-        ta->action = action;
+        ta.target = target;
+        ta.action = action;
         [self.targetActions addObject:ta];
     }
     
-    ta->events |= events;
+    ta.events |= events;
 }
 
 - (void)removeTarget:(id)target action:(SEL)action forRequestEvents:(SMWebRequestEvents)events {
@@ -124,10 +122,10 @@ NSString *const SMErrorResponseKey = @"response";
         
         if (!ta) break;
         
-        SMWebRequestEvents toRemove = ta->events & events;
-        ta->events -= toRemove;
+        SMWebRequestEvents toRemove = ta.events & events;
+        ta.events -= toRemove;
         
-        if (!ta->events)
+        if (!ta.events)
             [self.targetActions removeObject:ta];
     }
     
@@ -143,7 +141,7 @@ NSString *const SMErrorResponseKey = @"response";
     NSMutableArray *resultTargetActions = [NSMutableArray array];
     
     for(SMTargetAction *ta in self.targetActions)
-        if ((ta->events & events) != 0) [resultTargetActions addObject:ta];
+        if ((ta.events & events) != 0) [resultTargetActions addObject:ta];
     
     return resultTargetActions;
 }
@@ -157,7 +155,7 @@ NSString *const SMErrorResponseKey = @"response";
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 
     for (SMTargetAction *ta in [self targetActionsForEvents:events])
-        [ta->target performSelector:ta->action withObject:arg withObject:self.context];
+        [ta.target performSelector:ta.action withObject:arg withObject:self.context];
     
     #pragma clang diagnostic pop
 
@@ -283,5 +281,4 @@ NSString *const SMErrorResponseKey = @"response";
 @end
 
 @implementation SMErrorResponse
-@synthesize response, data;
 @end
